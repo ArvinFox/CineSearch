@@ -1,12 +1,24 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../utils/tmdbApi";
+import { useFavorites } from "../context/FavoritesContext";
 
 export const MovieCard = ({ movie, onClick }) => {
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const favorited = isFavorite(movie.id);
   const posterUrl = getImageUrl(movie.poster_path);
   const rating = movie.vote_average
     ? (movie.vote_average / 2).toFixed(1)
     : "N/A";
+
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    if (favorited) {
+      removeFavorite(movie.id);
+    } else {
+      addFavorite(movie);
+    }
+  };
 
   return (
     <motion.div
@@ -16,6 +28,17 @@ export const MovieCard = ({ movie, onClick }) => {
       className="cursor-pointer group"
     >
       <div className="relative overflow-hidden rounded-lg shadow-lg h-80">
+        {/* Heart Button */}
+        <motion.button
+          onClick={handleFavoriteClick}
+          animate={{ scale: favorited ? 1.2 : 1 }}
+          whileHover={{ scale: favorited ? 1.3 : 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="absolute top-3 right-3 z-10 bg-white dark:bg-slate-800 rounded-full p-2 shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <span className="text-2xl">{favorited ? "❤️" : "🤍"}</span>
+        </motion.button>
+
         <img
           src={posterUrl}
           alt={movie.title}

@@ -1,10 +1,32 @@
 import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../context/ThemeContext";
+import { useFavorites } from "../context/FavoritesContext";
 
 export const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
   const { theme, setTheme } = useTheme();
+  const { favorites } = useFavorites();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const scrollToSection = (sectionId) => {
+    setIsMobileMenuOpen(false);
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        document
+          .getElementById(sectionId)
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      document
+        .getElementById(sectionId)
+        ?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const themeOptions = [
     { id: "light", label: "Light Mode", icon: "☀️" },
@@ -62,25 +84,35 @@ export const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
-            <a
-              href="#trending"
+            <button
+              onClick={() => scrollToSection("trending")}
               className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               Trending
-            </a>
-            <a
-              href="#top-rated"
+            </button>
+            <button
+              onClick={() => scrollToSection("top-rated")}
               className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               Top Rated
-            </a>
-            <a
-              href="#upcoming"
+            </button>
+            <button
+              onClick={() => scrollToSection("upcoming")}
               className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
               Upcoming
-            </a>
+            </button>
           </nav>
+
+          {/* Mobile Menu Button */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+            aria-label="Toggle mobile menu"
+          >
+            <span className="text-2xl">{isMobileMenuOpen ? "✕" : "☰"}</span>
+          </motion.button>
 
           {/* Search Bar */}
           <div className="flex-1 min-w-[240px] max-w-md">
@@ -96,6 +128,30 @@ export const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
               className="w-full px-4 py-2 rounded-lg border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:dark:border-indigo-400 transition-all duration-300"
             />
           </div>
+
+          {/* Favorites Link */}
+          <Link to="/favorites">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+            >
+              <span className="text-lg">❤️</span>
+              <span className="font-semibold text-sm text-slate-700 dark:text-slate-300">
+                Favorites
+              </span>
+              {favorites.length > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-600 dark:bg-indigo-500 text-white"
+                >
+                  {favorites.length}
+                </motion.span>
+              )}
+            </motion.div>
+          </Link>
 
           {/* Theme Dropdown */}
           <div className="relative">
@@ -171,6 +227,38 @@ export const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
             </AnimatePresence>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              variants={dropdownVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="md:hidden mt-4 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+            >
+              <button
+                onClick={() => scrollToSection("trending")}
+                className="w-full px-4 py-3 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-semibold"
+              >
+                Trending
+              </button>
+              <button
+                onClick={() => scrollToSection("top-rated")}
+                className="w-full px-4 py-3 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-semibold"
+              >
+                Top Rated
+              </button>
+              <button
+                onClick={() => scrollToSection("upcoming")}
+                className="w-full px-4 py-3 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-semibold"
+              >
+                Upcoming
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );
